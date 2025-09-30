@@ -11,15 +11,12 @@ router.post('/', upload, async (req, res) => {
     try {
         const bookData = req.body.book ? JSON.parse(req.body.book) : req.body;
 
-        // Chercher le fichier image
         const file = req.files.find(f => f.fieldname === 'image');
 
-        // Construire l'URL
         const imageUrl = file
             ? `${req.protocol}://${req.get('host')}/images/${file.filename}`
             : null;
 
-        // Créer le livre
         const book = new Book({
             userId: bookData.userId,
             title: bookData.title,

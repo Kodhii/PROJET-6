@@ -16,7 +16,6 @@ const bookSchema = new mongoose.Schema({
   averageRating: { type: Number, default: 0 },
 }, { timestamps: true });
 
-// Optionnel : renvoyer l'id sous forme string
 bookSchema.method('toJSON', function() {
   const { __v, ...object } = this.toObject();
   object.id = object._id.toString();

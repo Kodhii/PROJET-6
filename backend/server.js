@@ -20,7 +20,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Route test principale
 app.get('/', (req, res) => {
-    res.send('Express + MongoDB en marche');
+  res.send('Express + MongoDB en marche');
 });
 
 // Images
@@ -33,5 +33,5 @@ app.use('/api/auth', usersRoutes);
 // Démarrage serveur
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-    console.log(`Serveur lancé sur http://localhost:${PORT}`);
+  console.log(`Serveur lancé sur http://localhost:${PORT}`);
 });
