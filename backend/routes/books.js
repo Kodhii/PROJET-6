@@ -3,6 +3,7 @@ const Book = require('../models/book');
 const upload = require('../middleware/multer-config');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 
 const router = express.Router();
 
@@ -13,9 +14,23 @@ router.post('/', upload, async (req, res) => {
 
         const file = req.files.find(f => f.fieldname === 'image');
 
-        const imageUrl = file
-            ? `${req.protocol}://${req.get('host')}/images/${file.filename}`
-            : null;
+        let imageUrl = null;
+
+        if (req.files && req.files.length > 0) {
+            const file = req.files.find(f => f.fieldname === 'image');
+            if (file) {
+                const webpFilename = file.filename.split('.')[0] + '.webp';
+                const webpPath = path.join(__dirname, '../images', webpFilename);
+
+                await sharp(file.path)
+                    .webp({ quality: 80 })
+                    .toFile(webpPath);
+
+                fs.unlinkSync(file.path);
+
+                imageUrl = `${req.protocol}://${req.get('host')}/images/${webpFilename}`;
+            }
+        }
 
         const book = new Book({
             userId: bookData.userId,
@@ -39,7 +54,7 @@ router.post('/', upload, async (req, res) => {
 // Récupérer les livres les mieux notés
 router.get('/bestrating', async (req, res) => {
     try {
-        const books = await Book.find().sort({ averageRating: -1 }).limit(10);
+        const books = await Book.find().sort({ averageRating: -1 }).limit(3);
         res.status(200).json(books.map(b => b.toJSON()));
     } catch (err) {
         console.error('ERROR in GET /api/books/bestrating:', err);
@@ -90,9 +105,21 @@ router.put('/:id', upload, async (req, res) => {
                 if (book.imageUrl) {
                     const oldFilename = book.imageUrl.split('/images/')[1];
                     const oldFilePath = path.join(__dirname, '../images', oldFilename);
-                    fs.unlink(oldFilePath, (err) => { if (err) console.error('Erreur suppression ancienne image:', err); });
+                    fs.unlink(oldFilePath, (err) => {
+                        if (err) console.error('Erreur suppression ancienne image:', err);
+                    });
                 }
-                updateFields.imageUrl = `${req.protocol}://${req.get('host')}/images/${file.filename}`;
+
+                const webpFilename = file.filename.split('.')[0] + '.webp';
+                const webpPath = path.join(__dirname, '../images', webpFilename);
+
+                await sharp(file.path)
+                    .webp({ quality: 80 })
+                    .toFile(webpPath);
+
+                fs.unlinkSync(file.path);
+
+                updateFields.imageUrl = `${req.protocol}://${req.get('host')}/images/${webpFilename}`;
             }
         }
 

@@ -14,9 +14,16 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const name = file.originalname.split(' ').join('_');
-    const ext = path.extname(file.originalname);
-    cb(null, Date.now() + '_' + name);
+    cb(null, Date.now() + path.extname(name)); 
   }
 });
 
-module.exports = multer({ storage }).any();
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Seules les images sont autorisées !'), false);
+  }
+};
+
+module.exports = multer({ storage, fileFilter }).any();
