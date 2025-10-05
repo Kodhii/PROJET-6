@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const name = file.originalname.split(' ').join('_');
-    cb(null, Date.now() + path.extname(name)); 
+    cb(null, Date.now() + path.extname(name));
   }
 });
 
@@ -26,4 +26,13 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-module.exports = multer({ storage, fileFilter }).any();
+const upload = multer({ storage, fileFilter }).any();
+
+module.exports = (req, res, next) => {
+  upload(req, res, function (err) {
+    if (err) {
+      return res.status(400).json({ message: err.message });
+    }
+    next();
+  });
+};
